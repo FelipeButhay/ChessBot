@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -130,11 +130,21 @@
     <ClCompile Include="ChessDisplay.cpp" />
     <ClCompile Include="ChessDisplay.h" />
     <ClCompile Include="ChessDisplayGame.cpp" />
+    <ClCompile Include="ChessDisplaySettings.cpp" />
     <ClCompile Include="ChessDisplayMenu.cpp" />
+    <ClCompile Include="ChessEngine.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MovesGeneratorKing.cpp" />
+    <ClCompile Include="MovesGeneratorQueen.cpp" />
+    <ClCompile Include="MovesGeneratorRook.cpp" />
+    <ClCompile Include="MovesGeneratorBishop.cpp" />
+    <ClCompile Include="MovesGeneratorKnight.cpp" />
+    <ClCompile Include="MovesGeneratorPawn.cpp" />
+    <ClCompile Include="Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChessEngine.h" />
+    <ClInclude Include="Tools.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
