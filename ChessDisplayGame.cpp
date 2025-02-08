@@ -121,15 +121,6 @@ void Display::DrawGame() {
 					DrawTextureEx(BlackPiecesTexture[k], PiecePos, 0, 2*u/128.0f, WHITE);
 				}
 			}
-
-			//std::string SqNum = intToStr(14 - i - j);
-			//char* SqNumChar = strToChar(SqNum);
-			//DrawText(SqNumChar, 2*u + 2*u*i, 2*u + 2*u*j, u, BLACK);
-			//delete[] SqNumChar;
-			
-			//if (DiagonalMasks[(BoardVariables.NMoves - 1) % 15] & (1ULL << sqIndx)) {
-			//	DrawRectangle(2*u + 2*u*i, 2*u + 2*u*j, 2*u, 2*u, BOARD_T_BLUE);
-			//}
 		}
 	}
 

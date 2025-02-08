@@ -13,8 +13,9 @@ void Engine::MovesGeneratorKing() {
 		else                     KingMovements &= ~FilesMasks[0];
 
 		KingMovements &= BoardVariables.Turn ? ~WhitePiecesOccupied : ~BlackPiecesOccupied;
-		KingMovements &= ~MovesGeneratorUnsafeSq();
+		U64 Unsafe = MovesGeneratorUnsafeSq();
 
+		KingMovements &= ~Unsafe;
 		while (KingMovements != 0) {
 			int sqIndx = IterLSB(KingMovements);
 
@@ -24,6 +25,40 @@ void Engine::MovesGeneratorKing() {
 			MoveStr[2] = sqIndx % 8 + '0';
 			MoveStr[3] = sqIndx / 8 + '0';
 			this->PossibleMoves += MoveStr + " ";
+		}
+
+		if ((Unsafe & KingBitboard) == 0) {
+			if (BoardVariables.Turn) {
+				// wk
+				if (BoardVariables.CastleWK && (WhitePieces[R] & (1ULL << 7)) && 
+					(Occupied & CastlingEmptyWKMask) == 0 && (Unsafe & CastlingSafe_WKMask) == 0) {
+
+					this->PossibleMoves += "40O2";
+
+				} else
+				// wq
+				if (BoardVariables.CastleWQ && (WhitePieces[R] & (1ULL << 0)) &&
+					(Occupied & CastlingEmptyWQMask) == 0 && (Unsafe & CastlingSafe_WQMask) == 0) {
+
+					this->PossibleMoves += "40O3";
+
+				}
+			} else {
+				// bk
+				if (BoardVariables.CastleBK && (BlackPieces[R] & (1ULL << 63)) &&
+					(Occupied & CastlingEmptyBKMask) == 0 && (Unsafe & CastlingSafe_BKMask) == 0) {
+
+					this->PossibleMoves += "47O2";
+
+				} else
+				// bq
+				if (BoardVariables.CastleBQ && (BlackPieces[R] & (1ULL << 56)) &&
+					(Occupied & CastlingEmptyBQMask) == 0 && (Unsafe & CastlingSafe_BQMask) == 0) {
+
+					this->PossibleMoves += "47O3";
+
+				}
+			}
 		}
 	}
 }

@@ -139,18 +139,53 @@ void Engine::Move(std::string& Move4Char) {
                 }
             }
         }
+
+        this->BoardVariables.EnPassantMask = 0;
     }
     // chequear castle
     else if (Move4Char[2] == 'O') {
-        if        (Move4Char[3] == '2' &&  BoardVariables.Turn) { //enroque corto blanco
+        if        (Move4Char[3] == '2' &&  BoardVariables.Turn) { //enroque wk
+            this->WhitePieces[K] &= ~(1ULL << 4);
+            this->WhitePieces[K] |=  (1ULL << 6);
 
-        } else if (Move4Char[3] == '2' && !BoardVariables.Turn) { //enroque corto negro
+            this->WhitePieces[R] &= ~(1ULL << 7);
+            this->WhitePieces[R] |=  (1ULL << 5);
 
-        } else if (Move4Char[3] == '3' &&  BoardVariables.Turn) { //enroque largo blanco
+            this->BoardVariables.CastleWK = false;
+            this->BoardVariables.CastleWQ = false;
 
-        } else if (Move4Char[3] == '3' && !BoardVariables.Turn) { //enroque largo negro
+        } else if (Move4Char[3] == '3' &&  BoardVariables.Turn) { //enroque wq
+            this->WhitePieces[K] &= ~(1ULL << 4);
+            this->WhitePieces[K] |=  (1ULL << 2);
 
+            this->WhitePieces[R] &= ~(1ULL << 0);
+            this->WhitePieces[R] |=  (1ULL << 3);
+
+            this->BoardVariables.CastleWK = false;
+            this->BoardVariables.CastleWQ = false;
+
+        } else if (Move4Char[3] == '2' && !BoardVariables.Turn) { //enroque bk
+            this->BlackPieces[K] &= ~(1ULL << 60);
+            this->BlackPieces[K] |=  (1ULL << 62);
+
+            this->BlackPieces[R] &= ~(1ULL << 63);
+            this->BlackPieces[R] |=  (1ULL << 61);
+
+            this->BoardVariables.CastleBK = false;
+            this->BoardVariables.CastleBQ = false;
+
+        } else if (Move4Char[3] == '3' && !BoardVariables.Turn) { //enroque bq
+            this->BlackPieces[K] &= ~(1ULL << 60);
+            this->BlackPieces[K] |=  (1ULL << 58);
+
+            this->BlackPieces[R] &= ~(1ULL << 56);
+            this->BlackPieces[R] |=  (1ULL << 59);
+
+            this->BoardVariables.CastleBK = false;
+            this->BoardVariables.CastleBQ = false;
         }
+
+        this->BoardVariables.EnPassantMask = 0;
     }
     // common moves
     else {

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <array>
 #include <vector>
+#include <fstream>
 
 #define BOARD_WHITE  CLITERAL(Color){ 241, 217, 192, 255 }
 #define BOARD_BLACK  CLITERAL(Color){ 127,  65,  31, 255 }
@@ -26,6 +27,10 @@ class Display {
 
 	// 0 menu, 1 settings, 2 chess local, 3 chess bot
 	short stage;
+
+	float AnimationFrame = 0;
+	std::vector<std::vector<std::string>> Files;
+	Font MonoFont;
 
 	unsigned short resolution;
 	short difResolutions[8][2] = { {  900,  500 }, { 1280,  720 }, { 1366,  768 }, { 1536,  864 },
@@ -63,4 +68,6 @@ class Display {
 
 	void Loop();
 	void Draw();
+
+	void Unload();
 };

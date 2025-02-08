@@ -2,7 +2,7 @@
 #include "ChessDisplay.h"
 
 Display::Display(Engine& engine) : engine(engine) {
-    this->resolution = 0;
+    this->resolution = 4;
     this->sx = difResolutions[resolution%8][0];
     this->sy = difResolutions[resolution%8][1];
     this->u = sy*0.05f;
@@ -26,6 +26,28 @@ Display::Display(Engine& engine) : engine(engine) {
     this->BlackPiecesTexture[3] = LoadTexture("sprites/black-rook.png");
     this->BlackPiecesTexture[4] = LoadTexture("sprites/black-queen.png");
     this->BlackPiecesTexture[5] = LoadTexture("sprites/black-king.png");
+
+    this->MonoFont = LoadFont("fonts/CONSOLA.TTF");
+
+    int n = 0;
+    while (true) {
+        n++;
+        std::string filename = "frames/video-ASCII-" + std::to_string(n) + ".txt";
+        std::ifstream file(filename);
+
+        if (!file) {
+            break;
+        }
+
+        std::vector<std::string> FileLines;
+        std::string line;
+
+        while (std::getline(file, line)) {
+            FileLines.push_back(line);
+        }
+
+        Files.push_back(FileLines);
+    }
 }
 
 void Display::Loop() {
@@ -51,6 +73,16 @@ void Display::Draw() {
             DrawGame(); break;
     }
 }
+
+void Display::Unload() {
+    UnloadFont(MonoFont);
+
+    for (int i = 0; i<6; i++) {
+        UnloadTexture(WhitePiecesTexture[i]);
+        UnloadTexture(BlackPiecesTexture[i]);
+    }
+}
+
 
 void Display::MovesStrToVec(std::string& MovesStr) {
     // MOVE NOTATION SF,SR,EF,ER
@@ -79,6 +111,8 @@ void Display::MovesStrToVec(std::string& MovesStr) {
             if (MovesStr[i + 3] == '2') sqIndx = startIndx + 2;
             if (MovesStr[i + 3] == '3') sqIndx = startIndx - 2;
             SubString = MovesStr.substr(i, 4);
+
+            std::cout << sqIndx << " " << SubString << '\n';
         } 
         // common moves
         else {

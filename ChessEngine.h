@@ -71,6 +71,18 @@ const std::array<U64, 15> AntiDiagonalMasks = {
 const U64 knightMask = 0xa1100110a;
 const U64 kingMask = 0x70507;
 
+const U64 CastlingSafe_WKMask = 0x0000000000000070;
+const U64 CastlingEmptyWKMask = 0x0000000000000060;
+								
+const U64 CastlingSafe_WQMask = 0x000000000000001c;
+const U64 CastlingEmptyWQMask = 0x000000000000000e;
+								
+const U64 CastlingSafe_BKMask = 0x7000000000000000;
+const U64 CastlingEmptyBKMask = 0x6000000000000000;
+
+const U64 CastlingSafe_BQMask = 0x1c00000000000000;
+const U64 CastlingEmptyBQMask = 0x0e00000000000000;
+
 typedef struct Board {
 	bool Turn;
 

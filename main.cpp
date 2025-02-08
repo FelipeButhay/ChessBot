@@ -2,7 +2,7 @@
 
 int main(void) {
 	// "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	std::string FEN = "k7/8/8/8/8/8/8/RNBQK3 w KQkq - 0 1";
+	std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	Engine engine(FEN);
 	Display display(engine);
 
