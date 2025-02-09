@@ -1,6 +1,11 @@
 #include "ChessDisplay.h"
 
 void Display::LoopMenu() {
+	if (!LoadingAnimation && !ReadyToDrawAnimation) {
+		LoadingThread.join();
+		this->ReadyToDrawAnimation = true;
+	}
+
 	if (IsKeyPressed(KEY_SPACE)) {
 		if (GetWindowPosition().x == 0 && GetWindowPosition().y == 0) {
 			SetWindowPosition(100, 100);
@@ -35,7 +40,7 @@ void Display::LoopMenu() {
 		}
 	}
 
-	this->AnimationFrame += 0.25;
+	if (ReadyToDrawAnimation) this->AnimationFrame += 0.25;
 	if (AnimationFrame == Files.size()) this->AnimationFrame = 0;
 }
 
@@ -60,13 +65,15 @@ void Display::DrawMenu() {
 		mouseInRect(2*u, 15*u, MeasureText("Settings"            , 1.5*u), 1.5*u) ? GRAY : WHITE);
 
 
-	int FontSize = 30*u/56;
-	int AnimationGap = (sy - FontSize*0.5*56)/2;
-	for (int i = 0; i < 56; i++) {
-		char* AnimationLine = strToChar(Files[(int)AnimationFrame][i]);
-		int AnimationWidth = MeasureTextEx(MonoFont, AnimationLine, FontSize, -FontSize*0.25).x;
-		Vector2 TextPosition = { sx - AnimationGap - AnimationWidth, AnimationGap + i*FontSize*0.5 };
-		DrawTextEx(MonoFont, AnimationLine, TextPosition, FontSize, -FontSize*0.25, GREEN);
+	int FontSize = 30*u/FirstFile.size();
+	int AnimationGap = (sy - FontSize*0.7*FirstFile.size())/2;
+
+	for (int i = 0; i < FirstFile.size(); i++) {
+		char* AnimationLine = strToChar(ReadyToDrawAnimation ? Files[(int)AnimationFrame][i] : FirstFile[i]);
+		int AnimationWidth = MeasureTextEx(MonoFont, AnimationLine, FontSize, FontSize*0.25).x;
+
+		Vector2 TextPosition = { sx + 9*u - AnimationWidth, AnimationGap + i*FontSize*0.7 };
+		DrawTextEx(MonoFont, AnimationLine, TextPosition, FontSize, FontSize*0.25, GREEN);
 
 		delete[] AnimationLine;
 	}

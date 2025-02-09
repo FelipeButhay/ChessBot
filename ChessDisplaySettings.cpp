@@ -9,6 +9,8 @@ void Display::LoopSettings() {
 		}
 	}
 
+	//std::cout << difResolutions[resolution%8][0] << " x " << difResolutions[resolution%8][1] << '\n';
+
 	if (IsMouseButtonPressed(0)) {
 		if (mouseInRect(u, u*18, MeasureText("Return", u*4/3), u*4/3)) {
 			this->stage = 0;

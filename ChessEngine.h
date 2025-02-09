@@ -3,6 +3,7 @@
 #include <string>
 #include <array>
 #include <iostream>
+#include <vector>
 
 #include "Tools.h"
 
@@ -98,6 +99,12 @@ typedef struct Board {
 	unsigned short int NMoves;
 };
 
+typedef struct CheckingPiece {
+	char PieceType;
+	short PosIndx;
+	U64 BlockingBitboard;
+};
+
 class Engine {
 	private:
 
@@ -107,6 +114,8 @@ class Engine {
 
 	std::array<U64, 6> WhitePieces = { 0 };
 	std::array<U64, 6> BlackPieces = { 0 };
+
+	std::vector<CheckingPiece> CheckingPieces;
 
 	U64 WhitePiecesOccupied = 0;
 	U64 BlackPiecesOccupied = 0;
@@ -124,6 +133,8 @@ class Engine {
 
 	void MovesGeneratorWhitePawn();
 	void MovesGeneratorBlackPawn();
+
+	void GenerateCheckingPieces();
 
 	U64 MovesGeneratorUnsafeSq();
 

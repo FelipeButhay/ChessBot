@@ -13,6 +13,8 @@ void Engine::MovesGeneratorKnight() {
 		else                       KnightMovements &= ~(FilesMasks[0] | FilesMasks[1]);
 
 		KnightMovements &= BoardVariables.Turn ? ~WhitePiecesOccupied : ~BlackPiecesOccupied;
+		if (CheckingPieces.size() == 1) KnightMovements &= CheckingPieces[0].BlockingBitboard;
+
 		while (KnightMovements != 0) {
 			int sqIndx = IterLSB(KnightMovements);
 

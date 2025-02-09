@@ -9,6 +9,10 @@ void Display::LoopGame() {
 		short my = GetMouseY();
 		short ClickedSqIndx = (mx - 2*u)/(2*u) + (7 - (my - 2*u)/(2*u)) * 8;
 
+		if (mouseInRect(2*u, u*18, MeasureText("Return", u), u)) {
+			this->stage = 0;
+		}
+
 		// CHOOSE A PIECE TO PROMOTE
 		if (mouseInRect(20*u, 16*u, 8*u, 2*u) && WaitingForPromotion) {
 			int PiecePromotedIndx = (mx - 20*u)/(2*u);
@@ -143,4 +147,7 @@ void Display::DrawGame() {
 						  PiecePos, 0, 2*u/128.0f, WHITE);
 		}
 	}
+
+	DrawText("Return", 2*u, u*18.5, u,
+		mouseInRect(2*u, u*18, MeasureText("Return", u), u) ? GRAY : WHITE);
 }

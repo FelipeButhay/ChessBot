@@ -16,5 +16,7 @@ int main(void) {
 		EndDrawing();
 	}
 
+	display.Unload();
+
 	return 0;
 }

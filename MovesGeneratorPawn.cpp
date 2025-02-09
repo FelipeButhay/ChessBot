@@ -13,6 +13,8 @@ void Engine::MovesGeneratorWhitePawn() {
 	U64 PawnsBitboard = WhitePieces[P];
 
 	U64 SinglePushMoves = (PawnsBitboard << 8)  & Empty & ~RanksMasks[7];
+	if (CheckingPieces.size() == 1) SinglePushMoves &= CheckingPieces[0].BlockingBitboard;
+
 	while (SinglePushMoves != 0) {
 		int sqIndx = IterLSB(SinglePushMoves);
 		int row  = sqIndx / 8;
@@ -26,8 +28,11 @@ void Engine::MovesGeneratorWhitePawn() {
 		this->PossibleMoves += MoveStr + " ";
 	}
 
+
 	// double push
 	U64 DoublePushMoves = (PawnsBitboard << 16) & Empty & (Empty << 8) & RanksMasks[3];
+	if (CheckingPieces.size() == 1) DoublePushMoves &= CheckingPieces[0].BlockingBitboard;
+
 	while (DoublePushMoves != 0) {
 		int sqIndx = IterLSB(DoublePushMoves);
 		int row = sqIndx / 8;
@@ -43,6 +48,8 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	// captures
 	U64 RightCaptures = (PawnsBitboard << 9) & (BlackPiecesOccupied | BoardVariables.EnPassantMask) & ~RanksMasks[7] & ~FilesMasks[0];
+	if (CheckingPieces.size() == 1) RightCaptures &= CheckingPieces[0].BlockingBitboard;
+
 	while (RightCaptures != 0) {
 		int sqIndx = IterLSB(RightCaptures);
 		int row = sqIndx / 8;
@@ -57,6 +64,8 @@ void Engine::MovesGeneratorWhitePawn() {
 	}
 
 	U64 LeftCaptures  = (PawnsBitboard << 7) & (BlackPiecesOccupied | BoardVariables.EnPassantMask) & ~RanksMasks[7] & ~FilesMasks[7];
+	if (CheckingPieces.size() == 1) LeftCaptures &= CheckingPieces[0].BlockingBitboard;
+
 	while (LeftCaptures != 0) {
 		int sqIndx = IterLSB(LeftCaptures);
 		int row = sqIndx / 8;
@@ -73,6 +82,8 @@ void Engine::MovesGeneratorWhitePawn() {
 	// PROMOTIONS
 	// single push
 	U64 SinglePushMovesProm = (PawnsBitboard << 8)  & Empty & RanksMasks[7];
+	if (CheckingPieces.size() == 1) SinglePushMovesProm &= CheckingPieces[0].BlockingBitboard;
+
 	while (SinglePushMovesProm != 0) {
 		int sqIndx = IterLSB(SinglePushMovesProm);
 		int row = sqIndx / 8;
@@ -91,6 +102,8 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	// captures
 	U64 RightCapturesProm = (PawnsBitboard << 9) & BlackPiecesOccupied & RanksMasks[7] & ~FilesMasks[0];
+	if (CheckingPieces.size() == 1) RightCapturesProm &= CheckingPieces[0].BlockingBitboard;
+
 	while (RightCapturesProm != 0) {
 		int sqIndx = IterLSB(RightCapturesProm);
 		int row = sqIndx / 8;
@@ -108,6 +121,8 @@ void Engine::MovesGeneratorWhitePawn() {
 	}
 
 	U64 LeftCapturesProm  = (PawnsBitboard << 7) & BlackPiecesOccupied & RanksMasks[7] & ~FilesMasks[7];
+	if (CheckingPieces.size() == 1) LeftCapturesProm &= CheckingPieces[0].BlockingBitboard;
+
 	while (LeftCapturesProm != 0) {
 		int sqIndx = IterLSB(LeftCapturesProm);
 		int row = sqIndx / 8;
@@ -130,6 +145,8 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	// single push
 	U64 SinglePushMoves = (PawnsBitboard >> 8)  & Empty & ~RanksMasks[0];
+	if (CheckingPieces.size() == 1) SinglePushMoves &= CheckingPieces[0].BlockingBitboard;
+
 	while (SinglePushMoves != 0) {
 		int sqIndx = IterLSB(SinglePushMoves);
 		int row = sqIndx / 8;
@@ -145,6 +162,8 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	// double push
 	U64 DoublePushMoves = (PawnsBitboard >> 16) & Empty & (Empty >> 8) & RanksMasks[4];
+	if (CheckingPieces.size() == 1) DoublePushMoves &= CheckingPieces[0].BlockingBitboard;
+
 	while (DoublePushMoves != 0) {
 		int sqIndx = IterLSB(DoublePushMoves);
 		int row = sqIndx / 8;
@@ -160,6 +179,8 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	// captures
 	U64 RightCaptures = (PawnsBitboard >> 9) & (WhitePiecesOccupied | BoardVariables.EnPassantMask) & ~RanksMasks[0] & ~FilesMasks[7];
+	if (CheckingPieces.size() == 1) RightCaptures &= CheckingPieces[0].BlockingBitboard;
+
 	while (RightCaptures != 0) {
 		int sqIndx = IterLSB(RightCaptures);
 		int row = sqIndx / 8;
@@ -174,6 +195,8 @@ void Engine::MovesGeneratorBlackPawn() {
 	}
 
 	U64 LeftCaptures  = (PawnsBitboard >> 7) & (WhitePiecesOccupied | BoardVariables.EnPassantMask) & ~RanksMasks[0] & ~FilesMasks[0];
+	if (CheckingPieces.size() == 1) LeftCaptures &= CheckingPieces[0].BlockingBitboard;
+
 	while (LeftCaptures != 0) {
 		int sqIndx = IterLSB(LeftCaptures);
 		int row = sqIndx / 8;
@@ -190,6 +213,8 @@ void Engine::MovesGeneratorBlackPawn() {
 	// PROMOTIONS
 	// single push
 	U64 SinglePushMovesProm = (PawnsBitboard >> 8)  & Empty & RanksMasks[0];
+	if (CheckingPieces.size() == 1) SinglePushMovesProm &= CheckingPieces[0].BlockingBitboard;
+
 	while (SinglePushMovesProm != 0) {
 		int sqIndx = IterLSB(SinglePushMovesProm);
 		int row = sqIndx / 8;
@@ -208,6 +233,8 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	// captures
 	U64 RightCapturesProm = (PawnsBitboard >> 9) & WhitePiecesOccupied & RanksMasks[0] & ~FilesMasks[7];
+	if (CheckingPieces.size() == 1) RightCapturesProm &= CheckingPieces[0].BlockingBitboard;
+
 	while (RightCapturesProm != 0) {
 		int sqIndx = IterLSB(RightCapturesProm);
 		int row = sqIndx / 8;
@@ -225,6 +252,8 @@ void Engine::MovesGeneratorBlackPawn() {
 	}
 
 	U64 LeftCapturesProm  = (PawnsBitboard >> 7) & WhitePiecesOccupied & RanksMasks[0] & ~FilesMasks[0];
+	if (CheckingPieces.size() == 1) LeftCapturesProm &= CheckingPieces[0].BlockingBitboard;
+
 	while (LeftCapturesProm != 0) {
 		int sqIndx = IterLSB(LeftCapturesProm);
 		int row = sqIndx / 8;

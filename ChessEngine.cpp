@@ -259,11 +259,20 @@ void Engine::Move(std::string& Move4Char) {
 }
 
 void Engine::GenerateMoveStr() {
-    this->MovesGeneratorPawn();
-    this->MovesGeneratorKnight();
-    this->MovesGeneratorBishop();
-    this->MovesGeneratorRook();
-    this->MovesGeneratorQueen();
+    this->GenerateCheckingPieces();
+
+    for (int i = 0; i<CheckingPieces.size(); i++) {
+        std::cout << CheckingPieces[i].PieceType << " " << CheckingPieces[i].PosIndx << " - ";
+    }
+
+    if (CheckingPieces.size() < 2) {
+        this->MovesGeneratorPawn();
+        this->MovesGeneratorKnight();
+        this->MovesGeneratorBishop();
+        this->MovesGeneratorRook();
+        this->MovesGeneratorQueen();
+    }
+
     this->MovesGeneratorKing();
 
     std::cout << PossibleMoves << '\n';

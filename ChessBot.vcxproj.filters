@@ -66,6 +66,9 @@
     <ClCompile Include="MovesGeneratorRook.cpp">
       <Filter>Source Files\Engine\Generators</Filter>
     </ClCompile>
+    <ClCompile Include="CheckingPiecesGenerator.cpp">
+      <Filter>Source Files\Engine\Generators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChessEngine.h">

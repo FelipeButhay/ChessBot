@@ -30,6 +30,8 @@ void Engine::MovesGeneratorQueen() {
 
 		U64 QueenMovements = Horizontal | Vertical | Diagonal | AntiDiagonal;
 		QueenMovements &= ~(BoardVariables.Turn ? WhitePiecesOccupied : BlackPiecesOccupied);
+		if (CheckingPieces.size() == 1) QueenMovements &= CheckingPieces[0].BlockingBitboard;
+
 		while (QueenMovements != 0) {
 			int sqIndx = IterLSB(QueenMovements);
 

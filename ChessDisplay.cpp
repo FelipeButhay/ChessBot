@@ -29,7 +29,22 @@ Display::Display(Engine& engine) : engine(engine) {
 
     this->MonoFont = LoadFont("fonts/CONSOLA.TTF");
 
-    int n = 0;
+    this->LoadingAnimation = true;
+    this->LoadingThread = std::thread(&Display::LoadAnimation, this, &Files);
+
+    std::ifstream file("frames/video-ASCII-1.txt");
+
+    if (file) {
+        std::string line;
+
+        while (std::getline(file, line)) {
+            FirstFile.push_back(line);
+        }
+    }
+}
+
+void Display::LoadAnimation(std::vector<std::vector<std::string>>* AnimationFiles) {
+    int n = 1;
     while (true) {
         n++;
         std::string filename = "frames/video-ASCII-" + std::to_string(n) + ".txt";
@@ -46,8 +61,10 @@ Display::Display(Engine& engine) : engine(engine) {
             FileLines.push_back(line);
         }
 
-        Files.push_back(FileLines);
+        (*AnimationFiles).push_back(FileLines);
     }
+
+    this->LoadingAnimation = false;
 }
 
 void Display::Loop() {
@@ -75,6 +92,10 @@ void Display::Draw() {
 }
 
 void Display::Unload() {
+    if (!LoadingAnimation && !ReadyToDrawAnimation) {
+        LoadingThread.join();
+    }
+
     UnloadFont(MonoFont);
 
     for (int i = 0; i<6; i++) {

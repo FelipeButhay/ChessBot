@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CheckingPiecesGenerator.cpp" />
     <ClCompile Include="ChessDisplay.cpp" />
     <ClCompile Include="ChessDisplay.h" />
     <ClCompile Include="ChessDisplayGame.cpp" />
