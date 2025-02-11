@@ -105,6 +105,10 @@ typedef struct CheckingPiece {
 	U64 BlockingBitboard;
 };
 
+typedef struct PinnedPiece {
+	U64 MovementRay;
+};
+
 class Engine {
 	private:
 
@@ -116,6 +120,8 @@ class Engine {
 	std::array<U64, 6> BlackPieces = { 0 };
 
 	std::vector<CheckingPiece> CheckingPieces;
+	std::array<PinnedPiece, 64> PinnedPieces;
+	U64 PinnedPiecesBitBoard;
 
 	U64 WhitePiecesOccupied = 0;
 	U64 BlackPiecesOccupied = 0;
@@ -134,7 +140,11 @@ class Engine {
 	void MovesGeneratorWhitePawn();
 	void MovesGeneratorBlackPawn();
 
+	void MovesGeneratorWhitePinnedPawn();
+	void MovesGeneratorBlackPinnedPawn();
+
 	void GenerateCheckingPieces();
+	void GeneratePinnedPieces();
 
 	U64 MovesGeneratorUnsafeSq();
 

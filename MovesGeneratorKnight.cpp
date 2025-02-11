@@ -15,6 +15,10 @@ void Engine::MovesGeneratorKnight() {
 		KnightMovements &= BoardVariables.Turn ? ~WhitePiecesOccupied : ~BlackPiecesOccupied;
 		if (CheckingPieces.size() == 1) KnightMovements &= CheckingPieces[0].BlockingBitboard;
 
+		if ((PinnedPiecesBitBoard & (1ULL << KnightPosIndx)) != 0) {
+			KnightMovements &= PinnedPieces[KnightPosIndx].MovementRay;
+		}
+
 		while (KnightMovements != 0) {
 			int sqIndx = IterLSB(KnightMovements);
 

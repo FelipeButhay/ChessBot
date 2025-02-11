@@ -260,10 +260,7 @@ void Engine::Move(std::string& Move4Char) {
 
 void Engine::GenerateMoveStr() {
     this->GenerateCheckingPieces();
-
-    for (int i = 0; i<CheckingPieces.size(); i++) {
-        std::cout << CheckingPieces[i].PieceType << " " << CheckingPieces[i].PosIndx << " - ";
-    }
+    this->GeneratePinnedPieces();
 
     if (CheckingPieces.size() < 2) {
         this->MovesGeneratorPawn();

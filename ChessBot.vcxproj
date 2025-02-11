@@ -141,6 +141,7 @@
     <ClCompile Include="MovesGeneratorBishop.cpp" />
     <ClCompile Include="MovesGeneratorKnight.cpp" />
     <ClCompile Include="MovesGeneratorPawn.cpp" />
+    <ClCompile Include="PinnedPiecesGenerator.cpp" />
     <ClCompile Include="Tools.cpp" />
   </ItemGroup>
   <ItemGroup>

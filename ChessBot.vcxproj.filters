@@ -19,8 +19,11 @@
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{782f10c2-b4d5-43f8-9e5e-e0851401dd51}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Engine\Generators">
+    <Filter Include="Source Files\Engine\Move Generators">
       <UniqueIdentifier>{9434e864-5dcf-41b4-968c-6962112f71f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Other Generators">
+      <UniqueIdentifier>{375b74f5-edd6-4b02-a59f-a47e665797a7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -49,25 +52,28 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="MovesGeneratorBishop.cpp">
-      <Filter>Source Files\Engine\Generators</Filter>
+      <Filter>Source Files\Engine\Move Generators</Filter>
     </ClCompile>
     <ClCompile Include="MovesGeneratorKing.cpp">
-      <Filter>Source Files\Engine\Generators</Filter>
+      <Filter>Source Files\Engine\Move Generators</Filter>
     </ClCompile>
     <ClCompile Include="MovesGeneratorKnight.cpp">
-      <Filter>Source Files\Engine\Generators</Filter>
+      <Filter>Source Files\Engine\Move Generators</Filter>
     </ClCompile>
     <ClCompile Include="MovesGeneratorPawn.cpp">
-      <Filter>Source Files\Engine\Generators</Filter>
+      <Filter>Source Files\Engine\Move Generators</Filter>
     </ClCompile>
     <ClCompile Include="MovesGeneratorQueen.cpp">
-      <Filter>Source Files\Engine\Generators</Filter>
+      <Filter>Source Files\Engine\Move Generators</Filter>
     </ClCompile>
     <ClCompile Include="MovesGeneratorRook.cpp">
-      <Filter>Source Files\Engine\Generators</Filter>
+      <Filter>Source Files\Engine\Move Generators</Filter>
     </ClCompile>
     <ClCompile Include="CheckingPiecesGenerator.cpp">
-      <Filter>Source Files\Engine\Generators</Filter>
+      <Filter>Source Files\Engine\Other Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="PinnedPiecesGenerator.cpp">
+      <Filter>Source Files\Engine\Other Generators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

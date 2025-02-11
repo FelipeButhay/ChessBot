@@ -3,8 +3,8 @@
 void Engine::GenerateCheckingPieces() {
 	CheckingPieces.clear();
 
-	U64 KingBitboad = BoardVariables.Turn ? WhitePieces[K] : BlackPieces[K];
-	int KingPos = _tzcnt_u64(KingBitboad);
+	U64 KingBitboard = BoardVariables.Turn ? WhitePieces[K] : BlackPieces[K];
+	int KingPos = _tzcnt_u64(KingBitboard);
 
 	int file = KingPos % 8;
 	int row = KingPos / 8;
@@ -17,11 +17,11 @@ void Engine::GenerateCheckingPieces() {
 	U64 KingIfPawnCaptures = 0;
 
 	// left capture
-	KingIfPawnCaptures |= BoardVariables.Turn ? (KingBitboad << 7) & BlackPieces[P] & ~FilesMasks[7] :
-												(KingBitboad >> 7) & WhitePieces[P] & ~FilesMasks[0];
+	KingIfPawnCaptures |= BoardVariables.Turn ? (KingBitboard << 7) & BlackPieces[P] & ~FilesMasks[7] :
+												(KingBitboard >> 7) & WhitePieces[P] & ~FilesMasks[0];
 	// right capture
-	KingIfPawnCaptures |= BoardVariables.Turn ? (KingBitboad << 9) & BlackPieces[P] & ~FilesMasks[0] :
-												(KingBitboad >> 9) & WhitePieces[P] & ~FilesMasks[7];
+	KingIfPawnCaptures |= BoardVariables.Turn ? (KingBitboard << 9) & BlackPieces[P] & ~FilesMasks[0] :
+												(KingBitboard >> 9) & WhitePieces[P] & ~FilesMasks[7];
 	
 
 

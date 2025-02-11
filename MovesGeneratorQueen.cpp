@@ -3,14 +3,14 @@
 void Engine::MovesGeneratorQueen() {
 	U64 QueensBitboard = BoardVariables.Turn ? WhitePieces[Q] : BlackPieces[Q];
 	while (QueensBitboard != 0) {
-		int BishopPosIndx = IterLSB(QueensBitboard);
-		int file = BishopPosIndx % 8;
-		int row = BishopPosIndx / 8;
+		int QueenPosIndx = IterLSB(QueensBitboard);
+		int file = QueenPosIndx % 8;
+		int row = QueenPosIndx / 8;
 
 		int d = row - file + 7;
 		int ad = row + file;
 
-		U64 s = 1ULL << BishopPosIndx;
+		U64 s = 1ULL << QueenPosIndx;
 
 		U64 h0 = (Occupied & RanksMasks[row]) - 2*s;
 		U64 h1 = reverse(reverse(Occupied & RanksMasks[row]) - 2*reverse(s));
@@ -30,7 +30,12 @@ void Engine::MovesGeneratorQueen() {
 
 		U64 QueenMovements = Horizontal | Vertical | Diagonal | AntiDiagonal;
 		QueenMovements &= ~(BoardVariables.Turn ? WhitePiecesOccupied : BlackPiecesOccupied);
+
 		if (CheckingPieces.size() == 1) QueenMovements &= CheckingPieces[0].BlockingBitboard;
+
+		if ((PinnedPiecesBitBoard & (1ULL << QueenPosIndx)) != 0) {
+			QueenMovements &= PinnedPieces[QueenPosIndx].MovementRay;
+		}
 
 		while (QueenMovements != 0) {
 			int sqIndx = IterLSB(QueenMovements);

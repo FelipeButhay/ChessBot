@@ -39,7 +39,7 @@ std::string intToStr(int num) {
     return str;
 }
 
-int IterLSB(unsigned long long int& Bitboard) {
+int IterLSB(U64& Bitboard) {
     int LSB = _tzcnt_u64(Bitboard);
     Bitboard &= (Bitboard - 1);
     return LSB;

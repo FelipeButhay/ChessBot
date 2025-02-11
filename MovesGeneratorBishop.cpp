@@ -22,7 +22,12 @@ void Engine::MovesGeneratorBishop() {
 
 		U64 BishopMovements = Diagonal | AntiDiagonal;
 		BishopMovements &= ~(BoardVariables.Turn ? WhitePiecesOccupied : BlackPiecesOccupied);
+
 		if (CheckingPieces.size() == 1) BishopMovements &= CheckingPieces[0].BlockingBitboard;
+
+		if ((PinnedPiecesBitBoard & (1ULL << BishopPosIndx)) != 0) {
+			BishopMovements &= PinnedPieces[BishopPosIndx].MovementRay;
+		}
 
 		while (BishopMovements != 0) {
 			int sqIndx = IterLSB(BishopMovements);

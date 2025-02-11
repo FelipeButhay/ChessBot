@@ -40,8 +40,8 @@ void Display::LoopMenu() {
 		}
 	}
 
-	if (ReadyToDrawAnimation) this->AnimationFrame += 0.25;
-	if (AnimationFrame == Files.size()) this->AnimationFrame = 0;
+	if (ReadyToDrawAnimation) this->AnimationFrame += 1/3.0;
+	if (AnimationFrame >= Files.size()) this->AnimationFrame = 0;
 }
 
 void Display::DrawMenu() {

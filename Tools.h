@@ -7,6 +7,8 @@
 
 #include "raylib.h"
 
+using U64 = unsigned long long int;
+
 bool mouseInRect(int posx, int posy, int width, int height);
 
 bool mouseInCirc(int posx, int posy, int radius);
@@ -17,9 +19,8 @@ std::string numToStr(float num);
 
 std::string intToStr(int num);
 
-int IterLSB(unsigned long long int& Bitboard);
+int IterLSB(U64& Bitboard);
 
-using U64 = unsigned long long int;
 U64 reverse(U64 b);
 
 void PrintU64(U64 b);

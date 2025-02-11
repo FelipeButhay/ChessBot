@@ -19,7 +19,12 @@ void Engine::MovesGeneratorRook() {
 
 		U64 RookMovements = Horizontal | Vertical;
 		RookMovements &= ~(BoardVariables.Turn ? WhitePiecesOccupied : BlackPiecesOccupied);
+
 		if (CheckingPieces.size() == 1) RookMovements &= CheckingPieces[0].BlockingBitboard;
+
+		if ((PinnedPiecesBitBoard & (1ULL << RookPosIndx)) != 0) {
+			RookMovements &= PinnedPieces[RookPosIndx].MovementRay;
+		}
 
 		while (RookMovements != 0) {
 			int sqIndx = IterLSB(RookMovements);

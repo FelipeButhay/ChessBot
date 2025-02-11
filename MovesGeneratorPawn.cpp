@@ -3,16 +3,19 @@
 void Engine::MovesGeneratorPawn() {
 	if (BoardVariables.Turn) {
 		this->MovesGeneratorWhitePawn();
+		this->MovesGeneratorWhitePinnedPawn();
 	} else {
 		this->MovesGeneratorBlackPawn();
+		this->MovesGeneratorBlackPinnedPawn();
 	}
 }
 
 void Engine::MovesGeneratorWhitePawn() {
 	// single push
-	U64 PawnsBitboard = WhitePieces[P];
+	U64 PawnsBitboard = WhitePieces[P] & ~PinnedPiecesBitBoard;
 
 	U64 SinglePushMoves = (PawnsBitboard << 8)  & Empty & ~RanksMasks[7];
+	
 	if (CheckingPieces.size() == 1) SinglePushMoves &= CheckingPieces[0].BlockingBitboard;
 
 	while (SinglePushMoves != 0) {
@@ -140,8 +143,64 @@ void Engine::MovesGeneratorWhitePawn() {
 	}
 }
 
+void Engine::MovesGeneratorWhitePinnedPawn() {
+	// single push
+	U64 PinnedPawnsBitboard = WhitePieces[P] & PinnedPiecesBitBoard;
+
+	while (PinnedPawnsBitboard != 0) {
+		int PawnPosIndx = IterLSB(PinnedPawnsBitboard);
+		int file = PawnPosIndx % 8;
+		int row = PawnPosIndx / 8;
+
+		U64 PawnBitboard = 1ULL << PawnPosIndx;
+		U64 PawnMovements = 0;
+
+		PawnMovements |= (PawnBitboard <<  8) & Empty;
+		PawnMovements |= (PawnBitboard << 16) & Empty & (Empty << 8) & RanksMasks[3];
+		PawnMovements |= (PawnBitboard << 9)  & (BlackPiecesOccupied | BoardVariables.EnPassantMask) & ~FilesMasks[0];
+		PawnMovements |= (PawnBitboard << 7)  & (BlackPiecesOccupied | BoardVariables.EnPassantMask) & ~FilesMasks[7];
+
+		if (CheckingPieces.size() == 1) PawnMovements &= CheckingPieces[0].BlockingBitboard;
+
+		if ((PinnedPiecesBitBoard & (1ULL << PawnPosIndx)) != 0) {
+			PawnMovements &= PinnedPieces[PawnPosIndx].MovementRay;
+		}
+
+		while (PawnMovements != 0 && row == 6) {
+			int sqIndx = IterLSB(PawnMovements);
+			int EndRow = sqIndx / 8;
+			int EndFile = sqIndx % 8;
+
+			std::string MoveStr = "---";
+			MoveStr[0] = file    + '0';
+			MoveStr[1] = row     + '0';
+			MoveStr[2] = EndFile + '0';
+
+			this->PossibleMoves += MoveStr + "N" + " ";
+			this->PossibleMoves += MoveStr + "B" + " ";
+			this->PossibleMoves += MoveStr + "R" + " ";
+			this->PossibleMoves += MoveStr + "Q" + " ";
+		}
+
+		while (PawnMovements != 0) {
+			int sqIndx = IterLSB(PawnMovements);
+			int EndRow = sqIndx / 8;
+			int EndFile = sqIndx % 8;
+
+			std::string MoveStr = "----";
+			MoveStr[0] = file    + '0';
+			MoveStr[1] = row     + '0';
+			MoveStr[2] = EndFile + '0';
+			MoveStr[3] = EndRow  + '0';
+			
+			this->PossibleMoves += MoveStr + " ";
+		}
+	}
+}
+
+
 void Engine::MovesGeneratorBlackPawn() {
-	U64 PawnsBitboard = BlackPieces[P];
+	U64 PawnsBitboard = BlackPieces[P] & ~PinnedPiecesBitBoard;
 
 	// single push
 	U64 SinglePushMoves = (PawnsBitboard >> 8)  & Empty & ~RanksMasks[0];
@@ -270,4 +329,59 @@ void Engine::MovesGeneratorBlackPawn() {
 		this->PossibleMoves += MoveStr + "Q" + " ";
 	}
 
+}
+
+void Engine::MovesGeneratorBlackPinnedPawn() {
+	// single push
+	U64 PinnedPawnsBitboard = BlackPieces[P] & PinnedPiecesBitBoard;
+
+	while (PinnedPawnsBitboard != 0) {
+		int PawnPosIndx = IterLSB(PinnedPawnsBitboard);
+		int file = PawnPosIndx % 8;
+		int row = PawnPosIndx / 8;
+
+		U64 PawnBitboard = 1ULL << PawnPosIndx;
+		U64 PawnMovements = 0;
+
+		PawnMovements |= (PawnBitboard  >> 8) & Empty;
+		PawnMovements |= (PawnBitboard >> 16) & Empty & (Empty >> 8) & RanksMasks[4];
+		PawnMovements |= (PawnBitboard  >> 9) & (WhitePiecesOccupied | BoardVariables.EnPassantMask) & ~FilesMasks[7];
+		PawnMovements |= (PawnBitboard  >> 7) & (WhitePiecesOccupied | BoardVariables.EnPassantMask) & ~FilesMasks[0];
+
+		if (CheckingPieces.size() == 1) PawnMovements &= CheckingPieces[0].BlockingBitboard;
+
+		if ((PinnedPiecesBitBoard & (1ULL << PawnPosIndx)) != 0) {
+			PawnMovements &= PinnedPieces[PawnPosIndx].MovementRay;
+		}
+
+		while (PawnMovements != 0 && row == 6) {
+			int sqIndx = IterLSB(PawnMovements);
+			int EndRow = sqIndx / 8;
+			int EndFile = sqIndx % 8;
+
+			std::string MoveStr = "---";
+			MoveStr[0] = file    + '0';
+			MoveStr[1] = row     + '0';
+			MoveStr[2] = EndFile + '0';
+
+			this->PossibleMoves += MoveStr + "N" + " ";
+			this->PossibleMoves += MoveStr + "B" + " ";
+			this->PossibleMoves += MoveStr + "R" + " ";
+			this->PossibleMoves += MoveStr + "Q" + " ";
+		}
+
+		while (PawnMovements != 0) {
+			int sqIndx = IterLSB(PawnMovements);
+			int EndRow = sqIndx / 8;
+			int EndFile = sqIndx % 8;
+
+			std::string MoveStr = "----";
+			MoveStr[0] = file    + '0';
+			MoveStr[1] = row     + '0';
+			MoveStr[2] = EndFile + '0';
+			MoveStr[3] = EndRow  + '0';
+
+			this->PossibleMoves += MoveStr + " ";
+		}
+	}
 }
