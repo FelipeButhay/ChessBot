@@ -82,12 +82,14 @@ Engine::Engine(const std::string FEN) {
 
 void Engine::Move(std::string& Move4Char) {
     this->GameMoves += Move4Char + " ";
+
     this->PossibleMoves = "";
 
     int StartFile = Move4Char[0] - '0', StartRow = Move4Char[1] - '0';
     int StartSq = StartFile + StartRow*8;
 
     int PieceTypeMoved;
+    //std::cout << "Turno: " << BoardVariables.Turn << '\n';
     if (BoardVariables.Turn) {
         for (int k = 0; k<6; k++) {
             if ((WhitePieces[k] & (1ULL << StartSq)) != 0) {
@@ -258,21 +260,87 @@ void Engine::Move(std::string& Move4Char) {
     this->GenerateMoveStr();
 }
 
+void Engine::UnMove() {
+    this->GameMoves.erase(GameMoves.size() - 5);
+
+    BoardState BoardData = BoardHistory.back();
+
+    this->WhitePieces = BoardData.WhitePieces;
+    this->BlackPieces = BoardData.BlackPieces;
+
+    this->WhitePiecesOccupied = BoardData.WhitePiecesOccupied;
+    this->BlackPiecesOccupied = BoardData.BlackPiecesOccupied;
+    this->Occupied = BoardData.Occupied;
+    this->Empty = BoardData.Empty;
+
+    this->BoardVariables = BoardData.BoardVariables;
+
+    this->PossibleMoves = BoardData.PossibleMoves;
+
+    this->GameState = BoardData.GameState;
+}
+
 void Engine::GenerateMoveStr() {
+
     this->GenerateCheckingPieces();
     this->GeneratePinnedPieces();
 
+
+
+    //std::cout << "CHECKING PIECES: ";
+    //for (int i = 0; i < CheckingPieces.size(); i++) {
+    //    std::cout << CheckingPieces[i].PieceType << " " << CheckingPieces[i].PosIndx << " // ";
+    //}
+
+    auto Gen1TimeStart = std::chrono::high_resolution_clock::now();
+    auto Gen1TimeEnd = std::chrono::high_resolution_clock::now();
+
+    auto Gen2TimeStart = std::chrono::high_resolution_clock::now();
+    auto Gen2TimeEnd = std::chrono::high_resolution_clock::now();
+
+
     if (CheckingPieces.size() < 2) {
+        Gen1TimeStart = std::chrono::high_resolution_clock::now();
         this->MovesGeneratorPawn();
         this->MovesGeneratorKnight();
+        Gen1TimeEnd = std::chrono::high_resolution_clock::now();
+
+        Gen2TimeStart = std::chrono::high_resolution_clock::now();
         this->MovesGeneratorBishop();
         this->MovesGeneratorRook();
         this->MovesGeneratorQueen();
+        Gen2TimeEnd = std::chrono::high_resolution_clock::now();
     }
 
+    auto Gen3TimeStart = std::chrono::high_resolution_clock::now();
     this->MovesGeneratorKing();
+    auto Gen3TimeEnd = std::chrono::high_resolution_clock::now();
 
-    std::cout << PossibleMoves << '\n';
+    std::chrono::duration<double, std::milli> Gen1TimeDuration = Gen1TimeEnd - Gen1TimeStart;
+    Generation1Time += Gen1TimeDuration.count();
+
+    std::chrono::duration<double, std::milli> Gen2TimeDuration = Gen2TimeEnd - Gen2TimeStart;
+    Generation2Time += Gen2TimeDuration.count();
+
+    std::chrono::duration<double, std::milli> Gen3TimeDuration = Gen3TimeEnd - Gen3TimeStart;
+    Generation3Time += Gen3TimeDuration.count();
+
+    // mate
+    if (PossibleMoves.length() == 0 && CheckingPieces.size() != 0) {
+        this->GameState = 1;
+    }
+    // ahogado
+    if (PossibleMoves.length() == 0 && CheckingPieces.size() == 0) {
+        this->GameState = 2;
+    }
+
+    if (GameState != 0) this->PossibleMoves = "";
+
+    this->CheckingPieces.clear();
+    this->PinnedPieces.fill({ 0 });
+    this->PinnedPiecesBitBoard = 0;
+    
+    //std::cout << PossibleMoves << '\n';
 }
 
 std::string Engine::FilterMoveString(unsigned short filterSq) {
@@ -305,4 +373,12 @@ Board Engine::GetBoardVariables() {
 
 std::array<U64, 6> Engine::GetBitboards(bool color) {
     return (color ? WhitePieces : BlackPieces);
+}
+
+std::string Engine::GetGameString() {
+    return GameMoves;
+}
+
+int Engine::GetGameResult() {
+    return GameState;
 }

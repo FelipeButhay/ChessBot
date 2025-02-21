@@ -14,7 +14,7 @@ void Display::LoopGame() {
 		}
 
 		// CHOOSE A PIECE TO PROMOTE
-		if (mouseInRect(20*u, 16*u, 8*u, 2*u) && WaitingForPromotion) {
+		if (mouseInRect(20*u, 4*u, 8*u, 2*u) && WaitingForPromotion) {
 			int PiecePromotedIndx = (mx - 20*u)/(2*u);
 			switch (PiecePromotedIndx){
 				case 0: this->PromSubString[3] = 'N'; break;
@@ -24,6 +24,7 @@ void Display::LoopGame() {
 			}
 
 			engine.Move(PromSubString);
+			this->GameState = engine.GetGameResult();
 			this->PromSubString = "";
 
 			PieceMoved = true;
@@ -50,6 +51,7 @@ void Display::LoopGame() {
 					}
 
 					engine.Move(PossibleMovesForSelectedPieceVec[i].Move4Char);
+					this->GameState = engine.GetGameResult();
 
 					PieceMoved = true;
 
@@ -137,17 +139,33 @@ void Display::DrawGame() {
 	}
 
 	// DRAW THE PROMOTION MENU
-	if (WaitingForPromotion) {
-		DrawText("Promotion!", 20*u, 14*u, 1.5*u, WHITE);
+	if (WaitingForPromotion && GameState == 0) {
+		DrawText("Promotion!", 20*u, 2*u, 1.5*u, WHITE);
 		for (int i = 0; i < 4; i++) {
-			DrawRectangle(20*u + 2*u*i, 16*u, 2*u, 2*u, i % 2 == 0 ? BOARD_BLACK : BOARD_WHITE);
+			DrawRectangle(20*u + 2*u*i, 4*u, 2*u, 2*u, i % 2 == 0 ? BOARD_BLACK : BOARD_WHITE);
 
-			Vector2 PiecePos = { 20*u + 2*u*i, 16*u };
+			Vector2 PiecePos = { 20*u + 2*u*i, 4*u };
 			DrawTextureEx(BoardVariables.Turn ? WhitePiecesTexture[i + 1] : BlackPiecesTexture[i + 1], 
 						  PiecePos, 0, 2*u/128.0f, WHITE);
 		}
 	}
 
+	if (GameState == 1) {
+		DrawText("Checkmate", 20*u, 2*u, 2*u, WHITE);
+
+		if (!BoardVariables.Turn) {
+			DrawText("White Wins", 20*u, 4*u, 1*u, GRAY);
+		} else {
+			DrawText("Black Wins", 20*u, 4*u, 1*u, GRAY);
+		}
+	}
+
+	if (GameState == 2) {
+		DrawText("Stalemate", 20*u, 2*u, 2*u, WHITE);
+		DrawText("It's a Draw", 20*u, 4*u, 1*u, GRAY);
+	}
+
 	DrawText("Return", 2*u, u*18.5, u,
 		mouseInRect(2*u, u*18, MeasureText("Return", u), u) ? GRAY : WHITE);
+
 }

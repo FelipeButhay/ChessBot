@@ -4,6 +4,7 @@
 #include <array>
 #include <iostream>
 #include <vector>
+#include <Chrono>
 
 #include "Tools.h"
 
@@ -109,6 +110,22 @@ typedef struct PinnedPiece {
 	U64 MovementRay;
 };
 
+typedef struct BoardState {
+	std::array<U64, 6> WhitePieces = { 0 };
+	std::array<U64, 6> BlackPieces = { 0 };
+
+	U64 WhitePiecesOccupied = 0;
+	U64 BlackPiecesOccupied = 0;
+	U64 Occupied = 0;
+	U64 Empty = 0;
+
+	Board BoardVariables;
+
+	std::string PossibleMoves;
+
+	int GameState;
+};
+
 class Engine {
 	private:
 
@@ -128,7 +145,14 @@ class Engine {
 	U64 Occupied = 0;
 	U64 Empty = 0;
 
+	// 0 playing, 1 mate, 2 stalemate, 3 repetition, 4 insufficient material, 5 50 moves rule
+	short GameState = 0;
+
 	Board BoardVariables;
+
+	std::vector<BoardState> BoardHistory;
+
+	double Generation1Time = 0, Generation2Time = 0, Generation3Time;
 
 	void MovesGeneratorPawn();
 	void MovesGeneratorKnight();
@@ -146,17 +170,23 @@ class Engine {
 	void GenerateCheckingPieces();
 	void GeneratePinnedPieces();
 
+	unsigned long int PerftGeneration(int Depth);
+
 	U64 MovesGeneratorUnsafeSq();
 
 	public:
 	Engine(const std::string FEN);
 
 	void GenerateMoveStr();
-
 	void Move(std::string& Move4Char);
+	void UnMove();
 
 	std::string FilterMoveString(unsigned short filterSq);
 
-	Board GetBoardVariables();
+	std::string        GetGameString();
+	Board              GetBoardVariables();
 	std::array<U64, 6> GetBitboards(bool color);
+	int                GetGameResult();
+
+	void PerftTesting();
 };

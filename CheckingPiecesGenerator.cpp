@@ -1,8 +1,6 @@
 #include "ChessEngine.h"
 
 void Engine::GenerateCheckingPieces() {
-	CheckingPieces.clear();
-
 	U64 KingBitboard = BoardVariables.Turn ? WhitePieces[K] : BlackPieces[K];
 	int KingPos = _tzcnt_u64(KingBitboard);
 
@@ -33,7 +31,7 @@ void Engine::GenerateCheckingPieces() {
 	if (KingPos % 8 < 4) KingIfKnightCaptures &= ~(FilesMasks[6] | FilesMasks[7]);
 	else                 KingIfKnightCaptures &= ~(FilesMasks[0] | FilesMasks[1]);
 
-	KingIfKnightCaptures &= !BoardVariables.Turn ? WhitePiecesOccupied : BlackPiecesOccupied;
+	KingIfKnightCaptures &= !BoardVariables.Turn ? WhitePieces[N] : BlackPieces[N];
 
 
 
@@ -50,6 +48,8 @@ void Engine::GenerateCheckingPieces() {
 	U64 AntiDiagonal = (a0 ^ a1) & AntiDiagonalMasks[ad];
 
 	U64 KingIfBishopMoves = Diagonal | AntiDiagonal;
+	KingIfBishopMoves &= !BoardVariables.Turn ? (WhitePieces[B] | WhitePieces[Q]) : (BlackPieces[B] | BlackPieces[Q]);
+
 	U64 KingIfBishopCaptures = KingIfBishopMoves & (!BoardVariables.Turn ? WhitePiecesOccupied : BlackPiecesOccupied);
 
 
@@ -64,6 +64,8 @@ void Engine::GenerateCheckingPieces() {
 	U64 Vertical = (v0 ^ v1) & FilesMasks[file];
 
 	U64 KingIfRookMoves = Horizontal | Vertical;
+	KingIfRookMoves &= !BoardVariables.Turn ? (WhitePieces[R] | WhitePieces[Q]) : (BlackPieces[R] | BlackPieces[Q]);
+
 	U64 KingIfRookCaptures = KingIfRookMoves & (!BoardVariables.Turn ? WhitePiecesOccupied : BlackPiecesOccupied);
 
 

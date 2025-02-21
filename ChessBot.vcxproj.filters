@@ -75,6 +75,9 @@
     <ClCompile Include="PinnedPiecesGenerator.cpp">
       <Filter>Source Files\Engine\Other Generators</Filter>
     </ClCompile>
+    <ClCompile Include="PerftTesting.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChessEngine.h">

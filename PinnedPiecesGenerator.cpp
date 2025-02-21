@@ -1,9 +1,6 @@
 #include "ChessEngine.h"
 
 void Engine::GeneratePinnedPieces() {
-	this->PinnedPieces.fill({ 0 });
-	this->PinnedPiecesBitBoard = 0;
-
 	U64 KingBitboard = BoardVariables.Turn ? WhitePieces[K] : BlackPieces[K];
 	int KingPos = _tzcnt_u64(KingBitboard);
 

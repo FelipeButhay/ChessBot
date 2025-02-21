@@ -55,6 +55,7 @@ class Display {
 	std::array<U64, 6> WhitePieces = { 0 };
 	std::array<U64, 6> BlackPieces = { 0 };
 	Board BoardVariables = { 0 };
+	short GameState = 0;
 
 	bool WaitingForPromotion = false;
 	std::string PromSubString;
