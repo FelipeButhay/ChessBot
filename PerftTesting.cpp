@@ -10,9 +10,9 @@ void Engine::PerftTesting() {
 
 		std::chrono::duration<double, std::milli> duracion = fin - inicio;
 		std::cout << "Se genero el paso: " << n << " se generaron: " << NMovements << " en: " << duracion.count() << " ms" << std::endl;
-		std::cout << " GENERATION 1 TIME: " << Generation1Time << " ms " << std::endl;
-		std::cout << " GENERATION 2 TIME: " << Generation2Time << " ms " << std::endl;
-		std::cout << " GENERATION 3 TIME: " << Generation3Time << " ms " << std::endl;
+		//std::cout << " COPY 1 TIME: " << Generation1Time << " ms " << std::endl;
+		//std::cout << " MOVE 2 TIME: " << Generation2Time << " ms " << std::endl;
+		//std::cout << " UNDO 3 TIME: " << Generation3Time << " ms " << std::endl;
 	}
 }
 
@@ -22,30 +22,58 @@ unsigned long int Engine::PerftGeneration(const int Depth) {
 	//std::cout << Depth << " ";
 	if (Depth <= 0) return 1;
 
+	auto CopyStart = std::chrono::high_resolution_clock::now();
+
 	BoardState BoardData = { 
-		WhitePieces, BlackPieces, WhitePiecesOccupied, BlackPiecesOccupied, Occupied, Empty, BoardVariables, PossibleMoves, GameState
+		WhitePieces, 
+		BlackPieces, 
+		
+		WhitePiecesOccupied, 
+		BlackPiecesOccupied, 
+		Occupied, 
+		Empty, 
+		
+		BoardVariables, 
+		
+		PossibleMoves, 
+		
+		GameState
 	};
+
 	this->BoardHistory.push_back(BoardData);
 
-	const std::string LocalPossibleMoves = PossibleMoves;
+	const std::vector<MoveData> LocalPossibleMoves = PossibleMoves;
 
-	//if (LocalPossibleMoves.size() == 0) {
-	//	std::cout << "ERROR, SIN MOVIMIENTOS, movimientos: " << GameMoves << '\n';
-	//}
+	auto CopyEnd = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> CopyTime = CopyEnd - CopyStart;
+	Generation1Time += CopyTime.count();
 
 	unsigned long int nodes = 0;
-	for (int m = 0; m < LocalPossibleMoves.size(); m += 5) {
+	for (int m = 0; m < LocalPossibleMoves.size(); m++) {
 
-		std::string Move4Char = LocalPossibleMoves.substr(m, 4);
-		this->Move(Move4Char);
+		auto MoveStart = std::chrono::high_resolution_clock::now();
+
+		MoveData Move = LocalPossibleMoves[m];
+		this->Move(Move);
+
+		auto MoveEnd = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> MoveTime = MoveEnd - MoveStart;
+		Generation2Time += MoveTime.count();
+
+
 
 		nodes += PerftGeneration(Depth - 1);
 
-		this->UnMove();
-	}
 
-	//if (Depth == 2) std::cout << nodes << '\n';
-	//if (Depth == 1) std::cout << "    " << nodes << '\n';
+
+		auto UndoStart = std::chrono::high_resolution_clock::now();
+
+		this->UnMove();
+
+		auto UndoEnd = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> UndoTime = UndoEnd - UndoStart;
+		Generation3Time += UndoTime.count();
+	}
 
 	this->BoardHistory.pop_back();
 

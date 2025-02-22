@@ -11,6 +11,33 @@
 enum PiecesIndx { P, N, B, R, Q, K };
 
 using U64 = unsigned long long int;
+using U16 = unsigned short int;
+
+const U16 EndMask = 0b0000000000111111;
+const U16 StartMask = 0b0000111111000000;
+const U16 FlagMask = 0b1111000000000000;
+
+// >> FLAGS <<
+
+enum Flags {
+	FLAG_NULL,
+	FLAG_EN_PASSANT,
+	FLAG_PAWN_DOUBLE_PUSH,
+	FLAG_O2,
+	FLAG_O3,
+	FLAG_PROM_N,
+	FLAG_PROM_B,
+	FLAG_PROM_R,
+	FLAG_PROM_Q
+};
+
+typedef struct MoveData {
+	U16 Data;
+	// 4 bits flags, 6 bits start, 6 bits end
+
+	MoveData() = default;
+	MoveData(U16 data) : Data(data) {}
+};
 
 const std::array<U64, 8> RanksMasks = {
 	0x00000000000000ff, 
@@ -121,17 +148,19 @@ typedef struct BoardState {
 
 	Board BoardVariables;
 
-	std::string PossibleMoves;
+	std::vector<MoveData> PossibleMoves;
+	int PossibleMovesUsed;
 
 	int GameState;
 };
+
 
 class Engine {
 	private:
 
 	// 4 chars + space  
-	std::string GameMoves = "";
-	std::string PossibleMoves = "";
+	std::vector<MoveData> GameMoves;
+	std::vector<MoveData> PossibleMoves;
 
 	std::array<U64, 6> WhitePieces = { 0 };
 	std::array<U64, 6> BlackPieces = { 0 };
@@ -178,12 +207,11 @@ class Engine {
 	Engine(const std::string FEN);
 
 	void GenerateMoveStr();
-	void Move(std::string& Move4Char);
+	void Move(MoveData& Move);
 	void UnMove();
 
-	std::string FilterMoveString(unsigned short filterSq);
+	void FilterMoveString(std::vector<MoveData>& MovesForSelectedSq ,unsigned short filterSq);
 
-	std::string        GetGameString();
 	Board              GetBoardVariables();
 	std::array<U64, 6> GetBitboards(bool color);
 	int                GetGameResult();

@@ -22,12 +22,10 @@ void Engine::MovesGeneratorKnight() {
 		while (KnightMovements != 0) {
 			int sqIndx = IterLSB(KnightMovements);
 
-			std::string MoveStr = "----";
-			MoveStr[0] = KnightPosIndx % 8 + '0';
-			MoveStr[1] = KnightPosIndx / 8 + '0';
-			MoveStr[2] = sqIndx % 8 + '0';
-			MoveStr[3] = sqIndx / 8  + '0';
-			this->PossibleMoves += MoveStr + " ";
+			MoveData Move = { 0 };
+			Move.Data |= sqIndx;
+			Move.Data |= KnightPosIndx << 6;
+			this->PossibleMoves.push_back(Move);
 		}
 	}
 }

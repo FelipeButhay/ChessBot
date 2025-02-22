@@ -19,12 +19,10 @@ void Engine::MovesGeneratorKing() {
 		while (KingMovements != 0) {
 			int sqIndx = IterLSB(KingMovements);
 
-			std::string MoveStr = "----";
-			MoveStr[0] = KingPosIndx % 8 + '0';
-			MoveStr[1] = KingPosIndx / 8 + '0';
-			MoveStr[2] = sqIndx % 8 + '0';
-			MoveStr[3] = sqIndx / 8 + '0';
-			this->PossibleMoves += MoveStr + " ";
+			MoveData Move = { 0 };
+			Move.Data |= sqIndx;
+			Move.Data |= KingPosIndx << 6;
+			this->PossibleMoves.push_back(Move);
 		}
 
 		if ((Unsafe & KingBitboard) == 0) {
@@ -32,15 +30,23 @@ void Engine::MovesGeneratorKing() {
 				// wk
 				if (BoardVariables.CastleWK && (WhitePieces[R] & (1ULL << 7)) && 
 					(Occupied & CastlingEmptyWKMask) == 0 && (Unsafe & CastlingSafe_WKMask) == 0) {
-
-					this->PossibleMoves += "40O2";
+					
+					MoveData Move = { 0 };
+					Move.Data |= 6;
+					Move.Data |= KingPosIndx << 6;
+					Move.Data |= FLAG_O2 << 12;
+					this->PossibleMoves.push_back(Move);
 
 				} else
 				// wq
 				if (BoardVariables.CastleWQ && (WhitePieces[R] & (1ULL << 0)) &&
 					(Occupied & CastlingEmptyWQMask) == 0 && (Unsafe & CastlingSafe_WQMask) == 0) {
 
-					this->PossibleMoves += "40O3";
+					MoveData Move = { 0 };
+					Move.Data |= 2;
+					Move.Data |= KingPosIndx << 6;
+					Move.Data |= FLAG_O3 << 12;
+					this->PossibleMoves.push_back(Move);
 
 				}
 			} else {
@@ -48,14 +54,22 @@ void Engine::MovesGeneratorKing() {
 				if (BoardVariables.CastleBK && (BlackPieces[R] & (1ULL << 63)) &&
 					(Occupied & CastlingEmptyBKMask) == 0 && (Unsafe & CastlingSafe_BKMask) == 0) {
 
-					this->PossibleMoves += "47O2";
+					MoveData Move = { 0 };
+					Move.Data |= 62;
+					Move.Data |= KingPosIndx << 6;
+					Move.Data |= FLAG_O2 << 12;
+					this->PossibleMoves.push_back(Move);
 
 				} else
 				// bq
 				if (BoardVariables.CastleBQ && (BlackPieces[R] & (1ULL << 56)) &&
 					(Occupied & CastlingEmptyBQMask) == 0 && (Unsafe & CastlingSafe_BQMask) == 0) {
 
-					this->PossibleMoves += "47O3";
+					MoveData Move = { 0 };
+					Move.Data |= 58;
+					Move.Data |= KingPosIndx << 6;
+					Move.Data |= FLAG_O3 << 12;
+					this->PossibleMoves.push_back(Move);
 
 				}
 			}

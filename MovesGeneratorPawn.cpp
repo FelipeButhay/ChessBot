@@ -20,17 +20,12 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	while (SinglePushMoves != 0) {
 		int sqIndx = IterLSB(SinglePushMoves);
-		int row  = sqIndx / 8;
-		int file = sqIndx % 8;
-		
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0';
-		MoveStr[1] = row  + '0' - 1;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
-	}
 
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx - 8) << 6;
+		this->PossibleMoves.push_back(Move);
+	}
 
 	// double push
 	U64 DoublePushMoves = (PawnsBitboard << 16) & Empty & (Empty << 8) & RanksMasks[3];
@@ -38,15 +33,12 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	while (DoublePushMoves != 0) {
 		int sqIndx = IterLSB(DoublePushMoves);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
 
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0';
-		MoveStr[1] = row  + '0' - 2;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx - 16) << 6;
+		Move.Data |= FLAG_PAWN_DOUBLE_PUSH << 12;
+		this->PossibleMoves.push_back(Move);
 	}
 
 	// captures
@@ -55,15 +47,11 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	while (RightCaptures != 0) {
 		int sqIndx = IterLSB(RightCaptures);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
 
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0' - 1;
-		MoveStr[1] = row  + '0' - 1;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx - 9) << 6;
+		this->PossibleMoves.push_back(Move);
 	}
 
 	U64 LeftCaptures  = (PawnsBitboard << 7) & (BlackPiecesOccupied | BoardVariables.EnPassantMask) & ~RanksMasks[7] & ~FilesMasks[7];
@@ -71,15 +59,11 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	while (LeftCaptures != 0) {
 		int sqIndx = IterLSB(LeftCaptures);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
 
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0' + 1;
-		MoveStr[1] = row  + '0' - 1;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx - 7) << 6;
+		this->PossibleMoves.push_back(Move);
 	}
 
 	// PROMOTIONS
@@ -89,18 +73,16 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	while (SinglePushMovesProm != 0) {
 		int sqIndx = IterLSB(SinglePushMovesProm);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
-
-		std::string MoveStr = "---";
-		MoveStr[0] = file + '0';
-		MoveStr[1] = row  + '0' - 1;
-		MoveStr[2] = file + '0';
-
-		this->PossibleMoves += MoveStr + "N" + " ";
-		this->PossibleMoves += MoveStr + "B" + " ";
-		this->PossibleMoves += MoveStr + "R" + " ";
-		this->PossibleMoves += MoveStr + "Q" + " ";
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx - 8) << 6;
+		
+		for (int i = 0; i < 4; i++) {
+			Move.Data |= (FLAG_PROM_N + i) << 12;
+			this->PossibleMoves.push_back(Move);
+			Move.Data &= ~FlagMask;
+		}
 	}
 
 	// captures
@@ -109,18 +91,16 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	while (RightCapturesProm != 0) {
 		int sqIndx = IterLSB(RightCapturesProm);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
-
-		std::string MoveStr = "---";
-		MoveStr[0] = file + '0' - 1;
-		MoveStr[1] = row  + '0' - 1;
-		MoveStr[2] = file + '0';
-
-		this->PossibleMoves += MoveStr + "N" + " ";
-		this->PossibleMoves += MoveStr + "B" + " ";
-		this->PossibleMoves += MoveStr + "R" + " ";
-		this->PossibleMoves += MoveStr + "Q" + " ";
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx - 9) << 6;
+		
+		for (int i = 0; i < 4; i++) {
+			Move.Data |= (FLAG_PROM_N + i) << 12;
+			this->PossibleMoves.push_back(Move);
+			Move.Data &= ~FlagMask;
+		}
 	}
 
 	U64 LeftCapturesProm  = (PawnsBitboard << 7) & BlackPiecesOccupied & RanksMasks[7] & ~FilesMasks[7];
@@ -128,18 +108,16 @@ void Engine::MovesGeneratorWhitePawn() {
 
 	while (LeftCapturesProm != 0) {
 		int sqIndx = IterLSB(LeftCapturesProm);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx - 7) << 6;
 
-		std::string MoveStr = "---";
-		MoveStr[0] = file + '0' + 1;
-		MoveStr[1] = row  + '0' - 1;
-		MoveStr[2] = file + '0';
-
-		this->PossibleMoves += MoveStr + "N" + " ";
-		this->PossibleMoves += MoveStr + "B" + " ";
-		this->PossibleMoves += MoveStr + "R" + " ";
-		this->PossibleMoves += MoveStr + "Q" + " ";
+		for (int i = 0; i < 4; i++) {
+			Move.Data |= (FLAG_PROM_N + i) << 12;
+			this->PossibleMoves.push_back(Move);
+			Move.Data &= ~FlagMask;
+		}
 	}
 }
 
@@ -168,32 +146,25 @@ void Engine::MovesGeneratorWhitePinnedPawn() {
 
 		while (PawnMovements != 0 && row == 6) {
 			int sqIndx = IterLSB(PawnMovements);
-			int EndRow = sqIndx / 8;
-			int EndFile = sqIndx % 8;
 
-			std::string MoveStr = "---";
-			MoveStr[0] = file    + '0';
-			MoveStr[1] = row     + '0';
-			MoveStr[2] = EndFile + '0';
+			MoveData Move = { 0 };
+			Move.Data |= sqIndx;
+			Move.Data |= PawnPosIndx << 6;
 
-			this->PossibleMoves += MoveStr + "N" + " ";
-			this->PossibleMoves += MoveStr + "B" + " ";
-			this->PossibleMoves += MoveStr + "R" + " ";
-			this->PossibleMoves += MoveStr + "Q" + " ";
+			for (int i = 0; i < 4; i++) {
+				Move.Data |= (FLAG_PROM_N + i) << 12;
+				this->PossibleMoves.push_back(Move);
+				Move.Data &= ~FlagMask;
+			}
 		}
 
 		while (PawnMovements != 0) {
 			int sqIndx = IterLSB(PawnMovements);
-			int EndRow = sqIndx / 8;
-			int EndFile = sqIndx % 8;
 
-			std::string MoveStr = "----";
-			MoveStr[0] = file    + '0';
-			MoveStr[1] = row     + '0';
-			MoveStr[2] = EndFile + '0';
-			MoveStr[3] = EndRow  + '0';
-			
-			this->PossibleMoves += MoveStr + " ";
+			MoveData Move = { 0 };
+			Move.Data |= sqIndx;
+			Move.Data |= PawnPosIndx << 6;
+			this->PossibleMoves.push_back(Move);
 		}
 	}
 }
@@ -208,15 +179,11 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	while (SinglePushMoves != 0) {
 		int sqIndx = IterLSB(SinglePushMoves);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
-
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0';
-		MoveStr[1] = row  + '0' + 1;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx + 8) << 6;
+		this->PossibleMoves.push_back(Move);
 	}
 
 	// double push
@@ -225,15 +192,12 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	while (DoublePushMoves != 0) {
 		int sqIndx = IterLSB(DoublePushMoves);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
 
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0';
-		MoveStr[1] = row  + '0' + 2;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx + 16) << 6;
+		Move.Data |= FLAG_PAWN_DOUBLE_PUSH << 12;
+		this->PossibleMoves.push_back(Move);
 	}
 
 	// captures
@@ -242,15 +206,11 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	while (RightCaptures != 0) {
 		int sqIndx = IterLSB(RightCaptures);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
-
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0' + 1;
-		MoveStr[1] = row  + '0' + 1;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx + 9) << 6;
+		this->PossibleMoves.push_back(Move);
 	}
 
 	U64 LeftCaptures  = (PawnsBitboard >> 7) & (WhitePiecesOccupied | BoardVariables.EnPassantMask) & ~RanksMasks[0] & ~FilesMasks[0];
@@ -258,15 +218,11 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	while (LeftCaptures != 0) {
 		int sqIndx = IterLSB(LeftCaptures);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
-
-		std::string MoveStr = "----";
-		MoveStr[0] = file + '0' - 1;
-		MoveStr[1] = row  + '0' + 1;
-		MoveStr[2] = file + '0';
-		MoveStr[3] = row  + '0';
-		this->PossibleMoves += MoveStr + " ";
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx + 7) << 6;
+		this->PossibleMoves.push_back(Move);
 	}
 
 	// PROMOTIONS
@@ -276,18 +232,16 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	while (SinglePushMovesProm != 0) {
 		int sqIndx = IterLSB(SinglePushMovesProm);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
-
-		std::string MoveStr = "---";
-		MoveStr[0] = file + '0';
-		MoveStr[1] = row  + '0' + 1;
-		MoveStr[2] = file + '0';
-
-		this->PossibleMoves += MoveStr + "N" + " ";
-		this->PossibleMoves += MoveStr + "B" + " ";
-		this->PossibleMoves += MoveStr + "R" + " ";
-		this->PossibleMoves += MoveStr + "Q" + " ";
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx + 8) << 6;
+		
+		for (int i = 0; i < 4; i++) {
+			Move.Data |= (FLAG_PROM_N + i) << 12;
+			this->PossibleMoves.push_back(Move);
+			Move.Data &= ~FlagMask;
+		}
 	}
 
 	// captures
@@ -296,18 +250,16 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	while (RightCapturesProm != 0) {
 		int sqIndx = IterLSB(RightCapturesProm);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx + 9) << 6;
 
-		std::string MoveStr = "---";
-		MoveStr[0] = file + '0' + 1;
-		MoveStr[1] = row  + '0' + 1;
-		MoveStr[2] = file + '0';
-
-		this->PossibleMoves += MoveStr + "N" + " ";
-		this->PossibleMoves += MoveStr + "B" + " ";
-		this->PossibleMoves += MoveStr + "R" + " ";
-		this->PossibleMoves += MoveStr + "Q" + " ";
+		for (int i = 0; i < 4; i++) {
+			Move.Data |= (FLAG_PROM_N + i) << 12;
+			this->PossibleMoves.push_back(Move);
+			Move.Data &= ~FlagMask;
+		}
 	}
 
 	U64 LeftCapturesProm  = (PawnsBitboard >> 7) & WhitePiecesOccupied & RanksMasks[0] & ~FilesMasks[0];
@@ -315,20 +267,17 @@ void Engine::MovesGeneratorBlackPawn() {
 
 	while (LeftCapturesProm != 0) {
 		int sqIndx = IterLSB(LeftCapturesProm);
-		int row = sqIndx / 8;
-		int file = sqIndx % 8;
+		
+		MoveData Move = { 0 };
+		Move.Data |= sqIndx;
+		Move.Data |= (sqIndx + 7) << 6;
 
-		std::string MoveStr = "---";
-		MoveStr[0] = file + '0' - 1;
-		MoveStr[1] = row  + '0' + 1;
-		MoveStr[2] = file + '0';
-
-		this->PossibleMoves += MoveStr + "N" + " ";
-		this->PossibleMoves += MoveStr + "B" + " ";
-		this->PossibleMoves += MoveStr + "R" + " ";
-		this->PossibleMoves += MoveStr + "Q" + " ";
+		for (int i = 0; i < 4; i++) {
+			Move.Data |= (FLAG_PROM_N + i) << 12;
+			this->PossibleMoves.push_back(Move);
+			Move.Data &= ~FlagMask;
+		}
 	}
-
 }
 
 void Engine::MovesGeneratorBlackPinnedPawn() {
@@ -354,34 +303,27 @@ void Engine::MovesGeneratorBlackPinnedPawn() {
 			PawnMovements &= PinnedPieces[PawnPosIndx].MovementRay;
 		}
 
-		while (PawnMovements != 0 && row == 6) {
+		while (PawnMovements != 0 && row == 1) {
 			int sqIndx = IterLSB(PawnMovements);
-			int EndRow = sqIndx / 8;
-			int EndFile = sqIndx % 8;
 
-			std::string MoveStr = "---";
-			MoveStr[0] = file    + '0';
-			MoveStr[1] = row     + '0';
-			MoveStr[2] = EndFile + '0';
+			MoveData Move = { 0 };
+			Move.Data |= sqIndx;
+			Move.Data |= PawnPosIndx << 6;
 
-			this->PossibleMoves += MoveStr + "N" + " ";
-			this->PossibleMoves += MoveStr + "B" + " ";
-			this->PossibleMoves += MoveStr + "R" + " ";
-			this->PossibleMoves += MoveStr + "Q" + " ";
+			for (int i = 0; i < 4; i++) {
+				Move.Data |= (FLAG_PROM_N + i) << 12;
+				this->PossibleMoves.push_back(Move);
+				Move.Data &= ~FlagMask;
+			}
 		}
 
 		while (PawnMovements != 0) {
 			int sqIndx = IterLSB(PawnMovements);
-			int EndRow = sqIndx / 8;
-			int EndFile = sqIndx % 8;
 
-			std::string MoveStr = "----";
-			MoveStr[0] = file    + '0';
-			MoveStr[1] = row     + '0';
-			MoveStr[2] = EndFile + '0';
-			MoveStr[3] = EndRow  + '0';
-
-			this->PossibleMoves += MoveStr + " ";
+			MoveData Move = { 0 };
+			Move.Data |= sqIndx;
+			Move.Data |= PawnPosIndx << 6;
+			this->PossibleMoves.push_back(Move);
 		}
 	}
 }

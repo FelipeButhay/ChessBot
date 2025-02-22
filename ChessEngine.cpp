@@ -80,170 +80,131 @@ Engine::Engine(const std::string FEN) {
     GenerateMoveStr();
 }
 
-void Engine::Move(std::string& Move4Char) {
-    this->GameMoves += Move4Char + " ";
+void Engine::Move(MoveData& Move) {
+    this->GameMoves.push_back(Move);
 
-    this->PossibleMoves = "";
+    this->PossibleMoves.clear();
 
-    int StartFile = Move4Char[0] - '0', StartRow = Move4Char[1] - '0';
-    int StartSq = StartFile + StartRow*8;
+    if (BoardVariables.Turn) this->BoardVariables.N50MovesRule++;
 
-    int PieceTypeMoved;
+    short int FinalSq  = (Move.Data & EndMask);
+    short int StartSq  = (Move.Data & StartMask) >> 6;
+
+    U64 FinalBitBoard = 1ULL << FinalSq;
+    U64 StartBitBoard = 1ULL << StartSq;
+
+    short int MoveFlag = (Move.Data & FlagMask) >> 12;
+
+    short int PieceTypeMoved = -1;
     //std::cout << "Turno: " << BoardVariables.Turn << '\n';
     if (BoardVariables.Turn) {
         for (int k = 0; k<6; k++) {
-            if ((WhitePieces[k] & (1ULL << StartSq)) != 0) {
-                this->WhitePieces[k] &= ~(1ULL << StartSq);
+            if ((WhitePieces[k] & StartBitBoard) != 0) {
+                this->WhitePieces[k] &= ~StartBitBoard;
                 PieceTypeMoved = k;
                 break;
             }
         }
     } else {
         for (int k = 0; k<6; k++) {
-            if ((BlackPieces[k] & (1ULL << StartSq)) != 0) {
-                this->BlackPieces[k] &= ~(1ULL << StartSq);
+            if ((BlackPieces[k] & StartBitBoard) != 0) {
+                this->BlackPieces[k] &= ~StartBitBoard;
                 PieceTypeMoved = k;
                 break;
             }
         }
     }
 
-    // promotions
-    if (Move4Char[3] >= 'A') {
-        int FinalSq = (Move4Char[2] - '0') + 56;
-        int PieceTypePromoted;
+    if (PieceTypeMoved == P) this->BoardVariables.N50MovesRule = 0;
 
-        switch ((char)Move4Char[3]){
-            case 'N': PieceTypePromoted = 1; break;
-            case 'B': PieceTypePromoted = 2; break;
-            case 'R': PieceTypePromoted = 3; break;
-            case 'Q': PieceTypePromoted = 4; break;
-        }
+    // escribe la pieza movida
+    if (BoardVariables.Turn) this->WhitePieces[PieceTypeMoved] |= FinalBitBoard;
+    else                     this->BlackPieces[PieceTypeMoved] |= FinalBitBoard;
 
-        if (BoardVariables.Turn) this->WhitePieces[PieceTypePromoted] |= (1ULL << FinalSq);
-        else                     this->BlackPieces[PieceTypePromoted] |= (1ULL << FinalSq);
+    //bora cualquier pieza en el lugar donde moviste la tuya
+    if (BoardVariables.Turn) {
+        for (int k = 0; k<6; k++) {
+            if ((BlackPieces[k] & FinalBitBoard) != 0) {
+                this->BlackPieces[k] &= ~FinalBitBoard;
 
-        //bora cualquier pieza en el lugar donde moviste la tuya
-        if (BoardVariables.Turn) {
-            for (int k = 0; k<6; k++) {
-                if ((BlackPieces[k] & (1ULL << FinalSq)) != 0) {
-                    this->BlackPieces[k] &= ~(1ULL << FinalSq);
-                    PieceTypeMoved = k;
-                    break;
-                }
-            }
-        } else {
-            for (int k = 0; k<6; k++) {
-                if ((WhitePieces[k] & (1ULL << FinalSq)) != 0) {
-                    this->WhitePieces[k] &= ~(1ULL << FinalSq);
-                    PieceTypeMoved = k;
-                    break;
-                }
+                this->BoardVariables.N50MovesRule = 0;
+                break;
             }
         }
+    } else {
+        for (int k = 0; k<6; k++) {
+            if ((WhitePieces[k] & FinalBitBoard) != 0) {
+                this->WhitePieces[k] &= ~FinalBitBoard;
 
+                this->BoardVariables.N50MovesRule = 0;
+                break;
+            }
+        }
+    }
+
+    // Reglas para el enroque
+    switch (StartSq) {
+        case 0:  this->BoardVariables.CastleWQ = false; break;
+        case 7:  this->BoardVariables.CastleWK = false; break;
+        case 56: this->BoardVariables.CastleBQ = false; break;
+        case 63: this->BoardVariables.CastleBK = false; break;
+
+        case 4:  this->BoardVariables.CastleWQ = false;
+                 this->BoardVariables.CastleWK = false; break;
+        case 60: this->BoardVariables.CastleBQ = false;
+                 this->BoardVariables.CastleBK = false; break;
+
+        default: break;
+    }
+
+    // EN PASSANT 
+    if (MoveFlag == FLAG_EN_PASSANT) {
+        if (!BoardVariables.Turn) this->WhitePieces[P] &= ~(BoardVariables.EnPassantMask << 8);
+        else                      this->BlackPieces[P] &= ~(BoardVariables.EnPassantMask >> 8);
+    }
+
+    // DOUBLE PUSH
+    if (MoveFlag == FLAG_PAWN_DOUBLE_PUSH) {
+        this->BoardVariables.EnPassantMask = BoardVariables.Turn ? StartBitBoard << 8 : StartBitBoard >> 8;
+    } else {
         this->BoardVariables.EnPassantMask = 0;
     }
+    
     // chequear castle
-    else if (Move4Char[2] == 'O') {
-        if        (Move4Char[3] == '2' &&  BoardVariables.Turn) { //enroque wk
-            this->WhitePieces[K] &= ~(1ULL << 4);
-            this->WhitePieces[K] |=  (1ULL << 6);
+    if        (MoveFlag == FLAG_O2 &&  BoardVariables.Turn) { //enroque wk
+        this->WhitePieces[R] &= ~(1ULL << 7);
+        this->WhitePieces[R] |=  (1ULL << 5);
 
-            this->WhitePieces[R] &= ~(1ULL << 7);
-            this->WhitePieces[R] |=  (1ULL << 5);
+        this->BoardVariables.CastleWK = false;
+        this->BoardVariables.CastleWQ = false;
 
-            this->BoardVariables.CastleWK = false;
-            this->BoardVariables.CastleWQ = false;
+    } else if (MoveFlag == FLAG_O3 &&  BoardVariables.Turn) { //enroque wqhttps://www.youtube.com/watch?v=zrh938pD38U
+        this->WhitePieces[R] &= ~(1ULL << 0);
+        this->WhitePieces[R] |=  (1ULL << 3);
 
-        } else if (Move4Char[3] == '3' &&  BoardVariables.Turn) { //enroque wq
-            this->WhitePieces[K] &= ~(1ULL << 4);
-            this->WhitePieces[K] |=  (1ULL << 2);
+        this->BoardVariables.CastleWK = false;
+        this->BoardVariables.CastleWQ = false;
 
-            this->WhitePieces[R] &= ~(1ULL << 0);
-            this->WhitePieces[R] |=  (1ULL << 3);
+    } else if (MoveFlag == FLAG_O2 && !BoardVariables.Turn) { //enroque bk
+        this->BlackPieces[R] &= ~(1ULL << 63);
+        this->BlackPieces[R] |=  (1ULL << 61);
 
-            this->BoardVariables.CastleWK = false;
-            this->BoardVariables.CastleWQ = false;
+        this->BoardVariables.CastleBK = false;
+        this->BoardVariables.CastleBQ = false;
 
-        } else if (Move4Char[3] == '2' && !BoardVariables.Turn) { //enroque bk
-            this->BlackPieces[K] &= ~(1ULL << 60);
-            this->BlackPieces[K] |=  (1ULL << 62);
+    } else if (MoveFlag == FLAG_O3 && !BoardVariables.Turn) { //enroque bq
+        this->BlackPieces[R] &= ~(1ULL << 56);
+        this->BlackPieces[R] |=  (1ULL << 59);
 
-            this->BlackPieces[R] &= ~(1ULL << 63);
-            this->BlackPieces[R] |=  (1ULL << 61);
-
-            this->BoardVariables.CastleBK = false;
-            this->BoardVariables.CastleBQ = false;
-
-        } else if (Move4Char[3] == '3' && !BoardVariables.Turn) { //enroque bq
-            this->BlackPieces[K] &= ~(1ULL << 60);
-            this->BlackPieces[K] |=  (1ULL << 58);
-
-            this->BlackPieces[R] &= ~(1ULL << 56);
-            this->BlackPieces[R] |=  (1ULL << 59);
-
-            this->BoardVariables.CastleBK = false;
-            this->BoardVariables.CastleBQ = false;
-        }
-
-        this->BoardVariables.EnPassantMask = 0;
+        this->BoardVariables.CastleBK = false;
+        this->BoardVariables.CastleBQ = false;
     }
-    // common moves
-    else {
-        int FinalSq = (Move4Char[2] - '0') + (Move4Char[3] - '0') * 8;
 
-        // escribe la pieza movida
-        if (BoardVariables.Turn) this->WhitePieces[PieceTypeMoved] |= (1ULL << FinalSq);
-        else                     this->BlackPieces[PieceTypeMoved] |= (1ULL << FinalSq);
 
-        //bora cualquier pieza en el lugar donde moviste la tuya
-        if (BoardVariables.Turn) {
-            for (int k = 0; k<6; k++) {
-                if ((BlackPieces[k] & (1ULL << FinalSq)) != 0) {
-                    this->BlackPieces[k] &= ~(1ULL << FinalSq);
-                    break;
-                }
-            }
-        } else {
-            for (int k = 0; k<6; k++) {
-                if ((WhitePieces[k] & (1ULL << FinalSq)) != 0) {
-                    this->WhitePieces[k] &= ~(1ULL << FinalSq);
-                    break;
-                }
-            }
-        }
+    if (MoveFlag == FLAG_PROM_N || MoveFlag == FLAG_PROM_B || MoveFlag == FLAG_PROM_R || MoveFlag == FLAG_PROM_Q) {
 
-        // chequea de borrar el peon de en passant
-        if ((BoardVariables.EnPassantMask & (1ULL << FinalSq)) != 0) {
-            if (BoardVariables.Turn) {
-                this->BlackPieces[P] &= ~(1ULL << (FinalSq - 8));
-            } else {
-                this->WhitePieces[P] &= ~(1ULL << (FinalSq + 8));
-            }
-        }
-
-        // crea la EnPassantMask
-        if (PieceTypeMoved == 0 && std::abs(StartSq - FinalSq) == 16) {
-            int EnPassantSq = (StartSq + FinalSq)/2;
-            this->BoardVariables.EnPassantMask = 1ULL << EnPassantSq;
-        } else {
-            this->BoardVariables.EnPassantMask = 0;
-        }
-
-        // Reglas para el enroque
-        switch (StartSq){
-            case 0:  this->BoardVariables.CastleWQ = false; break;
-            case 7:  this->BoardVariables.CastleWK = false; break;
-            case 56: this->BoardVariables.CastleBQ = false; break;
-            case 63: this->BoardVariables.CastleBK = false; break;
-
-            case 4:  this->BoardVariables.CastleWQ = false; 
-                     this->BoardVariables.CastleWK = false; break;
-            case 60: this->BoardVariables.CastleBQ = false; 
-                     this->BoardVariables.CastleBK = false; break;
-            default: break;
-        }
+            if (BoardVariables.Turn) this->WhitePieces[MoveFlag - FLAG_PROM_N + N] |= FinalBitBoard;
+            else                     this->BlackPieces[MoveFlag - FLAG_PROM_N + N] |= FinalBitBoard;
     }
 
     this->WhitePiecesOccupied = WhitePieces[0] | WhitePieces[1] | WhitePieces[2] | WhitePieces[3] | WhitePieces[4] | WhitePieces[5];
@@ -261,7 +222,7 @@ void Engine::Move(std::string& Move4Char) {
 }
 
 void Engine::UnMove() {
-    this->GameMoves.erase(GameMoves.size() - 5);
+    this->GameMoves.pop_back();
 
     BoardState BoardData = BoardHistory.back();
 
@@ -285,56 +246,26 @@ void Engine::GenerateMoveStr() {
     this->GenerateCheckingPieces();
     this->GeneratePinnedPieces();
 
-
-
-    //std::cout << "CHECKING PIECES: ";
-    //for (int i = 0; i < CheckingPieces.size(); i++) {
-    //    std::cout << CheckingPieces[i].PieceType << " " << CheckingPieces[i].PosIndx << " // ";
-    //}
-
-    auto Gen1TimeStart = std::chrono::high_resolution_clock::now();
-    auto Gen1TimeEnd = std::chrono::high_resolution_clock::now();
-
-    auto Gen2TimeStart = std::chrono::high_resolution_clock::now();
-    auto Gen2TimeEnd = std::chrono::high_resolution_clock::now();
-
-
     if (CheckingPieces.size() < 2) {
-        Gen1TimeStart = std::chrono::high_resolution_clock::now();
         this->MovesGeneratorPawn();
         this->MovesGeneratorKnight();
-        Gen1TimeEnd = std::chrono::high_resolution_clock::now();
-
-        Gen2TimeStart = std::chrono::high_resolution_clock::now();
         this->MovesGeneratorBishop();
         this->MovesGeneratorRook();
         this->MovesGeneratorQueen();
-        Gen2TimeEnd = std::chrono::high_resolution_clock::now();
     }
 
-    auto Gen3TimeStart = std::chrono::high_resolution_clock::now();
     this->MovesGeneratorKing();
-    auto Gen3TimeEnd = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double, std::milli> Gen1TimeDuration = Gen1TimeEnd - Gen1TimeStart;
-    Generation1Time += Gen1TimeDuration.count();
-
-    std::chrono::duration<double, std::milli> Gen2TimeDuration = Gen2TimeEnd - Gen2TimeStart;
-    Generation2Time += Gen2TimeDuration.count();
-
-    std::chrono::duration<double, std::milli> Gen3TimeDuration = Gen3TimeEnd - Gen3TimeStart;
-    Generation3Time += Gen3TimeDuration.count();
 
     // mate
-    if (PossibleMoves.length() == 0 && CheckingPieces.size() != 0) {
+    if (PossibleMoves.size() == 0 && CheckingPieces.size() != 0) {
         this->GameState = 1;
     }
     // ahogado
-    if (PossibleMoves.length() == 0 && CheckingPieces.size() == 0) {
+    if (PossibleMoves.size() == 0 && CheckingPieces.size() == 0) {
         this->GameState = 2;
     }
 
-    if (GameState != 0) this->PossibleMoves = "";
+    if (GameState != 0) this->PossibleMoves.clear();
 
     this->CheckingPieces.clear();
     this->PinnedPieces.fill({ 0 });
@@ -343,29 +274,15 @@ void Engine::GenerateMoveStr() {
     //std::cout << PossibleMoves << '\n';
 }
 
-std::string Engine::FilterMoveString(unsigned short filterSq) {
-    std::string PossibleMovesFiltered = "";
+void Engine::FilterMoveString(std::vector<MoveData>& PossibleMovesFiltered, unsigned short filterSq) {
+    U16 StartSquareBits = filterSq << 6;
 
-    int StartRow = filterSq / 8;
-    int StartFile = filterSq % 8;
-
-    std::string StartSquareStr = "--";
-    StartSquareStr[0] = StartFile + '0';
-    StartSquareStr[1] = StartRow  + '0';
-
-    for (int i = 0; i < PossibleMoves.length(); i += 5) {
-        // MOVE NOTATION SF,SR,EF,ER
-        // PROM NOTATION SF,SR,EF,PieceType
-        // CAST NOTATION SF,SR,'O', 2/3
-
-        if (StartSquareStr == PossibleMoves.substr(i, 2)) {
-            PossibleMovesFiltered += PossibleMoves.substr(i, 5);
+    for (int i = 0; i < PossibleMoves.size(); i ++) {
+        if (StartSquareBits == (PossibleMoves[i].Data & StartMask)) {
+            PossibleMovesFiltered.push_back(PossibleMoves[i]);
         }
     }
-
-    return PossibleMovesFiltered;
 }
-
 
 Board Engine::GetBoardVariables() {
     return BoardVariables;
@@ -373,10 +290,6 @@ Board Engine::GetBoardVariables() {
 
 std::array<U64, 6> Engine::GetBitboards(bool color) {
     return (color ? WhitePieces : BlackPieces);
-}
-
-std::string Engine::GetGameString() {
-    return GameMoves;
 }
 
 int Engine::GetGameResult() {

@@ -40,12 +40,10 @@ void Engine::MovesGeneratorQueen() {
 		while (QueenMovements != 0) {
 			int sqIndx = IterLSB(QueenMovements);
 
-			std::string MoveStr = "----";
-			MoveStr[0] = file + '0';
-			MoveStr[1] = row  + '0';
-			MoveStr[2] = sqIndx % 8 + '0';
-			MoveStr[3] = sqIndx / 8  + '0';
-			this->PossibleMoves += MoveStr + " ";
+			MoveData Move = { 0 };
+			Move.Data |= sqIndx;
+			Move.Data |= QueenPosIndx << 6;
+			this->PossibleMoves.push_back(Move);
 		}
 	}
 }
